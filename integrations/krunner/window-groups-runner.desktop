@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Window Groups
+Comment=Launch your window/app groups from KRunner
+Icon=window-duplicate
+Type=Service
+X-KDE-ServiceTypes=Plasma/Runner
+X-Plasma-API=DBus
+X-Plasma-DBusRunner-Service=com.github.window_groups.krunner
+X-Plasma-DBusRunner-Path=/window_groups_runner
+X-Plasma-Runner-Min-Letter-Count=0
+X-Plasma-Runner-Unique-Results=true

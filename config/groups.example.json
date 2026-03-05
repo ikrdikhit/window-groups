@@ -1,0 +1,85 @@
+{
+  "Work": {
+    "description": "Development workspace",
+    "color": "#4A90D9",
+    "apps": [
+      {
+        "name": "Terminal",
+        "command": "kitty",
+        "delay": 0
+      },
+      {
+        "name": "Browser",
+        "command": "firefox",
+        "delay": 0.8
+      },
+      {
+        "name": "Editor",
+        "command": "code",
+        "delay": 1.2
+      }
+    ]
+  },
+  "Study": {
+    "description": "Study / research session",
+    "color": "#27AE60",
+    "apps": [
+      {
+        "name": "Browser",
+        "command": "firefox",
+        "delay": 0
+      },
+      {
+        "name": "Notes",
+        "command": "obsidian",
+        "delay": 1.0
+      },
+      {
+        "name": "Terminal",
+        "command": "kitty",
+        "delay": 1.5
+      }
+    ]
+  },
+  "Media": {
+    "description": "Music and streaming",
+    "color": "#8E44AD",
+    "apps": [
+      {
+        "name": "Music",
+        "command": "spotify",
+        "delay": 0
+      },
+      {
+        "name": "Discord",
+        "command": "discord",
+        "delay": 2.0
+      }
+    ]
+  },
+  "Study-with-Workspace": {
+    "description": "Multi-workspace study setup example",
+    "color": "#E67E22",
+    "apps": [
+      {
+        "name": "Browser",
+        "command": "firefox",
+        "delay": 0,
+        "workspace": 1
+      },
+      {
+        "name": "Notes",
+        "command": "obsidian",
+        "delay": 1.0,
+        "workspace": 2
+      },
+      {
+        "name": "Terminal",
+        "command": "kitty",
+        "delay": 1.5,
+        "workspace": 2,
+        "pre_command": "mkdir -p ~/notes"
+      }
+    ]
+  }
+}

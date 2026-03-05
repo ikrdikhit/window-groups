@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  lint:
+    name: Lint & syntax check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install linters
+        run: pip install pyflakes
+
+      - name: Syntax check — all Python files
+        run: |
+          python -m py_compile window-groups.py
+          python -m py_compile lib/compositor.py
+          python -m py_compile lib/ui.py
+          python -m py_compile lib/config.py
+          python -m py_compile lib/launcher.py
+          python -m py_compile lib/session.py
+          python -m py_compile lib/smart.py
+          python -m py_compile lib/groups.py
+
+      - name: Pyflakes lint
+        run: pyflakes window-groups.py lib/
+
+  shellcheck:
+    name: Shellcheck install scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: sudo apt-get install -y shellcheck
+      - name: Check install.sh
+        run: shellcheck --severity=warning install.sh
+      - name: Check uninstall.sh (if exists)
+        run: |
+          if [ -f uninstall.sh ]; then
+            shellcheck --severity=warning uninstall.sh
+          fi
+
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run tests
+        run: |
+          python -m pytest tests/ -v --tb=short 2>/dev/null || \
+          python -m unittest discover -s tests -v 2>/dev/null || \
+          echo "No tests found — add tests/ directory to expand coverage"

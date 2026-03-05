@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Window Groups
+Comment=Smart window/app group launcher
+Exec=PLACEHOLDER_PYTHON PLACEHOLDER_SCRIPT
+Icon=window-duplicate
+Type=Application
+Categories=Utility;
+Keywords=windows;groups;launcher;workspace;apps;
+NoDisplay=true
