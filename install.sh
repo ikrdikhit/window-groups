@@ -24,20 +24,20 @@ SYSTEMD_DIR="${HOME}/.config/systemd/user"
 COMP_BASH_DIR="${HOME}/.local/share/bash-completion/completions"
 COMP_ZSH_DIR="${HOME}/.local/share/zsh/site-functions"
 COMP_FISH_DIR="${HOME}/.config/fish/completions"
-INSTALL_DEPS=true
-DO_UNINSTALL=false
-INSTALL_KDE=false
-INSTALL_GNOME=false
+INSTALL_DEPS="true"
+DO_UNINSTALL="false"
+INSTALL_KDE="false"
+INSTALL_GNOME="false"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ─── Arg parsing ──────────────────────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --prefix)       PREFIX="$2"; BIN_DIR="${PREFIX}/bin"; SHARE_DIR="${PREFIX}/share/window-groups"; shift 2 ;;
-    --no-deps)      INSTALL_DEPS=false; shift ;;
-    --uninstall)    DO_UNINSTALL=true; shift ;;
-    --kde)          INSTALL_KDE=true; shift ;;
-    --gnome)        INSTALL_GNOME=true; shift ;;
+    --no-deps)      INSTALL_DEPS="false"; shift ;;
+    --uninstall)    DO_UNINSTALL="true"; shift ;;
+    --kde)          INSTALL_KDE="true"; shift ;;
+    --gnome)        INSTALL_GNOME="true"; shift ;;
     -h|--help)
       echo "Usage: bash install.sh [--prefix DIR] [--no-deps] [--kde] [--gnome] [--uninstall]"
       echo ""
@@ -86,7 +86,7 @@ do_uninstall() {
   warn "  rm -rf ~/.config/window-groups"
 }
 
-if $DO_UNINSTALL; then
+if [[ "$DO_UNINSTALL" == "true" ]]; then
   do_uninstall
   exit 0
 fi
@@ -131,6 +131,7 @@ INSTALL_CMD=""
 
 if [[ -f /etc/os-release ]]; then
   # shellcheck disable=SC1091
+  # shellcheck source=/dev/null
   source /etc/os-release
   OS_ID="${ID:-unknown}"
 fi
@@ -213,15 +214,15 @@ check_tool() {
 }
 
 # Check UI backends (need at least one)
-UI_OK=false
+UI_OK="false"
 for ui_tool in rofi wofi fuzzel dmenu; do
   if command -v "$ui_tool" &>/dev/null; then
-    UI_OK=true
+    UI_OK="true"
     success "${ui_tool} ✓  (UI backend)"
   fi
 done
 
-if ! $UI_OK; then
+if [[ "$UI_OK" != "true" ]]; then
   warn "No UI backend found. Will try to install rofi."
   if [[ "$DS" == "Wayland" ]]; then
     warn "On Wayland, wofi or fuzzel may work better than rofi."
@@ -231,15 +232,15 @@ if ! $UI_OK; then
 fi
 
 # Check window listing tools
-WM_TOOL_OK=false
+WM_TOOL_OK="false"
 for wt in hyprctl swaymsg wmctrl; do
   if command -v "$wt" &>/dev/null; then
-    WM_TOOL_OK=true
+    WM_TOOL_OK="true"
     success "${wt} ✓  (window management)"
   fi
 done
 
-if ! $WM_TOOL_OK; then
+if [[ "$WM_TOOL_OK" != "true" ]]; then
   warn "No window management tool found."
   warn "Session save/restore will be limited without wmctrl/hyprctl/swaymsg."
 fi
@@ -256,18 +257,20 @@ install_pkg() {
 
   local pkg_name=""
   case "$PKG_MGR" in
-    apt)    pkg_name="${PKG_NAMES_APT[$tool]:-$tool}" ;;
-    pacman) pkg_name="${PKG_NAMES_PACMAN[$tool]:-$tool}" ;;
-    dnf)    pkg_name="${PKG_NAMES_DNF[$tool]:-$tool}" ;;
-    zypper) pkg_name="${PKG_NAMES_ZYPPER[$tool]:-$tool}" ;;
-    xbps)   pkg_name="${PKG_NAMES_XBPS[$tool]:-$tool}" ;;
-    apk)    pkg_name="${PKG_NAMES_APK[$tool]:-$tool}" ;;
+    apt)    pkg_name="${PKG_NAMES_APT["$tool"]:-$tool}" ;;
+    pacman) pkg_name="${PKG_NAMES_PACMAN["$tool"]:-$tool}" ;;
+    dnf)    pkg_name="${PKG_NAMES_DNF["$tool"]:-$tool}" ;;
+    zypper) pkg_name="${PKG_NAMES_ZYPPER["$tool"]:-$tool}" ;;
+    xbps)   pkg_name="${PKG_NAMES_XBPS["$tool"]:-$tool}" ;;
+    apk)    pkg_name="${PKG_NAMES_APK["$tool"]:-$tool}" ;;
     nix)    pkg_name="nixpkgs.${tool}" ;;
     *)      warn "Cannot auto-install ${tool} (unknown package manager)"; return 1 ;;
   esac
 
   info "Installing ${tool} (${pkg_name})…"
-  if $INSTALL_CMD "$pkg_name" 2>/dev/null; then
+  # Split INSTALL_CMD into an array for safe execution
+  IFS=' ' read -r -a install_arr <<< "$INSTALL_CMD"
+  if "${install_arr[@]}" "$pkg_name" 2>/dev/null; then
     success "Installed ${tool}"
     return 0
   else
@@ -277,9 +280,9 @@ install_pkg() {
   fi
 }
 
-if $INSTALL_DEPS; then
+if [[ "$INSTALL_DEPS" == "true" ]]; then
   # Require at least one UI backend
-  if ! $UI_OK; then
+  if [[ "$UI_OK" != "true" ]]; then
     if [[ "$DS" == "Wayland" ]]; then
       install_pkg "wofi" || install_pkg "rofi" || true
     else
@@ -545,7 +548,7 @@ case "${CURRENT_DESKTOP,,}" in
     echo "    ${WG_CMD} --manage" ;;
   *kde*|*plasma*)
     echo -e "${YLW}KDE Plasma detected.${RST}"
-    if ! $INSTALL_KDE; then
+    if [[ "$INSTALL_KDE" != "true" ]]; then
       echo ""
       echo -e "  ${BOLD}Recommended:${RST} install the KRunner plugin so groups appear"
       echo -e "  in KRunner (Alt+Space) without any extra launcher:"
@@ -557,7 +560,7 @@ case "${CURRENT_DESKTOP,,}" in
     echo "  Command: ${WG_CMD}  |  Shortcut: Meta+G" ;;
   *gnome*)
     echo -e "${YLW}GNOME detected.${RST}"
-    if ! $INSTALL_GNOME; then
+    if [[ "$INSTALL_GNOME" != "true" ]]; then
       echo ""
       echo -e "  ${BOLD}Recommended:${RST} install the GNOME search provider so groups"
       echo -e "  appear in Activities search (Super key) without any extra launcher:"
@@ -708,22 +711,22 @@ install_gnome_integration() {
 }
 
 # Auto-detect and prompt if not explicitly requested
-if ! $INSTALL_KDE && [[ "${CURRENT_DESKTOP,,}" == *kde* || "${CURRENT_DESKTOP,,}" == *plasma* ]]; then
+if [[ "$INSTALL_KDE" != "true" ]] && [[ "${CURRENT_DESKTOP,,}" == *kde* || "${CURRENT_DESKTOP,,}" == *plasma* ]]; then
   echo ""
   read -rp "Install KRunner plugin? (groups appear in Alt+Space search) [Y/n] " yn
   yn="${yn:-y}"
-  [[ "${yn,,}" == "y" ]] && INSTALL_KDE=true
+  [[ "${yn,,}" == "y" ]] && INSTALL_KDE="true"
 fi
 
-if ! $INSTALL_GNOME && [[ "${CURRENT_DESKTOP,,}" == *gnome* ]]; then
+if [[ "$INSTALL_GNOME" != "true" ]] && [[ "${CURRENT_DESKTOP,,}" == *gnome* ]]; then
   echo ""
   read -rp "Install GNOME search provider? (groups appear in Super search) [Y/n] " yn
   yn="${yn:-y}"
-  [[ "${yn,,}" == "y" ]] && INSTALL_GNOME=true
+  [[ "${yn,,}" == "y" ]] && INSTALL_GNOME="true"
 fi
 
-$INSTALL_KDE  && install_kde_integration
-$INSTALL_GNOME && install_gnome_integration
+[[ "$INSTALL_KDE"   == "true" ]] && install_kde_integration
+[[ "$INSTALL_GNOME" == "true" ]] && install_gnome_integration
 
 # ─── Verify installation ──────────────────────────────────────────────────────
 header "Verifying installation"

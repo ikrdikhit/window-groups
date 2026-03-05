@@ -27,32 +27,25 @@ jobs:
 
       - name: Syntax check — all Python files
         run: |
-          python -m py_compile window-groups.py
-          python -m py_compile lib/compositor.py
-          python -m py_compile lib/ui.py
-          python -m py_compile lib/config.py
-          python -m py_compile lib/launcher.py
-          python -m py_compile lib/session.py
-          python -m py_compile lib/smart.py
-          python -m py_compile lib/groups.py
+          find . -name "*.py" -not -path "./.git/*" | while read -r f; do
+            python -m py_compile "$f" && echo "OK: $f"
+          done
 
       - name: Pyflakes lint
-        run: pyflakes window-groups.py lib/
+        run: |
+          pip install pyflakes
+          python -m pyflakes window-groups.py lib/ integrations/
 
   shellcheck:
     name: Shellcheck install scripts
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install shellcheck
-        run: sudo apt-get install -y shellcheck
-      - name: Check install.sh
-        run: shellcheck --severity=warning install.sh
-      - name: Check uninstall.sh (if exists)
-        run: |
-          if [ -f uninstall.sh ]; then
-            shellcheck --severity=warning uninstall.sh
-          fi
+      - uses: ludeeus/action-shellcheck@master
+        with:
+          severity: warning
+          scandir: '.'
+          additional_files: 'install.sh'
 
   test:
     name: Unit tests

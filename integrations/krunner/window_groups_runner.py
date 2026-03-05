@@ -27,9 +27,7 @@ INSTALL (done automatically by install.sh --kde)
 
 from __future__ import annotations
 
-import os
 import sys
-import subprocess
 from pathlib import Path
 
 # ── locate our lib/ from wherever this file lives ──────────────────────────

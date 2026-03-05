@@ -12,12 +12,10 @@ from __future__ import annotations
 
 import json
 import os
-import re
 import shutil
 import subprocess
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum, auto
-from functools import cached_property
 from typing import Optional
 
 
@@ -363,7 +361,7 @@ def _walk_sway(node: dict, out: list, seen: set):
 
 
 def _windows_wmctrl() -> list[dict]:
-    import os, re
+    import os
     out = subprocess.check_output(["wmctrl", "-lp"], text=True)
     windows, seen = [], set()
     for line in out.splitlines():

@@ -5,9 +5,8 @@ No external ML deps — pure stdlib heuristics.
 
 from __future__ import annotations
 
-import math
 from collections import Counter
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 
 from . import config
